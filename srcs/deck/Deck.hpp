@@ -19,6 +19,7 @@ class Deck
 		void add(Card card);
 		void remove();
 		void display();
+		void reset();
 		std::vector<Card> getCards()const;
 
 	private:

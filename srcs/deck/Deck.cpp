@@ -36,6 +36,18 @@ void Deck::randomize()
 	std::shuffle(this->cards.begin(), this->cards.end(), rng);
 }
 
+
+void Deck::reset()
+{
+	cards.clear();
+	unsigned int i = 0;
+	while (i < 52)
+	{
+		cards.push_back(Card(i, i % 13, i % 4));
+		i++;
+	}
+}
+
 std::vector<Card> Deck::getCards()const
 {
 	return this->cards;

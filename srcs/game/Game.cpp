@@ -104,14 +104,12 @@ void Game::initializeGame() {
 	int j = MAX_PLAYER_COUNT - numPlayers;
 	bool is_heads_up = false;
 
-	//TODO : check if order ruins RNG
-
-    deck.randomize();
-    board.clear();
-
-    for (auto& player : players) {
+	for (auto& player : players) {
         player.resetHand();
     }
+	board.clear();
+	deck.reset();
+    deck.randomize();
 
     smallBlind = 5;
     bigBlind = 10;

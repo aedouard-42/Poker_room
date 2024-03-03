@@ -11,7 +11,7 @@
 
 int main(void)
 {
-    Game game(6);
+    Game game(5);
 
 
     game.playHand();
