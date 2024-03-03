@@ -165,58 +165,66 @@ void Game::playHand() {
 
 	/*Preflop*/
 	std::cout << *this << std::endl;
-    manageBets(Stage::preFlop);
+    if (manageBets(Stage::preFlop) == MANAGE_BETS_FOLDED)
+	{
+		return;
+	}
 	
 	/*Flop*/
     for (int i = 0; i < 3; i++) {
         board.draw(deck);
     }
 	std::cout << *this << std::endl;
-	manageBets(Stage::flop);
+    if (manageBets(Stage::flop) == MANAGE_BETS_FOLDED)
+	{
+		return;
+	}
 	
 	/*Turn*/
     board.draw(deck);
 	std::cout << *this << std::endl;
-	manageBets(Stage::turn);
+    if (manageBets(Stage::turn) == MANAGE_BETS_FOLDED)
+	{
+		return;
+	}
 	
 	
 	/*River*/
     board.draw(deck);
 	std::cout << *this << std::endl;
-	manageBets(Stage::river);
+    if (manageBets(Stage::river) == MANAGE_BETS_FOLDED)
+	{
+		return;
+	}
 
     // showdown();
     // prepareForNextHand();
 }
 
-void Game::manageBets(Stage stage) {
+size_t Game::manageBets(Stage stage) {
 
 
 	std::cout << "dealer position : " << Game::dealerPosition <<std::endl;
     size_t currentPlayer = Game::firstPlayerToAct(stage == Stage::preFlop);
 	std::cout << "current player position : " << currentPlayer <<std::endl;
     int highestBet;
-    size_t bbPosition;
-	size_t numPlayers = players.size();
 	int activePlayers;
+	size_t round_ending;
+
+	bool allPlayersActed = false;
+	std::vector<bool> hasActed(players.size(), false);
 
 	if (stage == Stage::preFlop)
 		highestBet = bigBlind;
 	else
 		highestBet = 0;
 
-
-	/*HEADS UP BB position is different*/
-	if (numPlayers == 2)
-		bbPosition = (dealerPosition + 1) % players.size(); 
-	else
-		bbPosition =(dealerPosition + 2) % players.size();
-
-
     while (true) 
 	{
         int toCall = highestBet - players[currentPlayer].currentBet;
         Action action = players[currentPlayer].decideAction(toCall, highestBet);
+		hasActed[currentPlayer] = true;
+		allPlayersActed = std::all_of(hasActed.begin(), hasActed.end(), [](bool acted) { return acted; });
         
         switch (action.type) {
             case ActionType::Fold:
@@ -234,36 +242,36 @@ void Game::manageBets(Stage stage) {
         }
 
 
-        if (currentPlayer == bbPosition) {
-            bbHasacted = true;
-        }
-
-        // Passer au joueur suivant
-
+		//exit condition : only one remaining player
 		activePlayers = std::count_if(players.begin(), players.end(), [](const Player& p) { return !p.isFolded; });
         if (activePlayers == 1) {
+			round_ending = MANAGE_BETS_FOLDED;
 			std::cout << "all folded" << std::endl;
             break;
         }
+
+		//find next player
 		do
 		{
 			currentPlayer = (currentPlayer + 1) % players.size();
 		} while (players[currentPlayer].isFolded);
 
-        // Vérifier si tous les joueurs ont agi
-        if (bbHasacted && std::all_of(players.begin(), players.end(), [&](const Player& p) {
+
+		//exit condition : all players acted and bets are equal
+        if (allPlayersActed && std::all_of(players.begin(), players.end(), [&](const Player& p) {
             return p.currentBet == highestBet || p.isFolded;
         })) 
 		{
+			round_ending = MANAGE_BETS_CALLED;
 			std::cout << " next street" << std::endl;
-            break; // Tous les joueurs ont agi ou fold, fin de la ronde de mises
+            break;
         }
     }
 
-    // Réinitialiser pour la prochaine ronde de mises
     for (auto& player : players) {
         player.currentBet = 0;
     }
+	return round_ending;
 }
 
 

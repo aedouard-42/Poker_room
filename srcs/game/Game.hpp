@@ -17,6 +17,8 @@ enum class Stage {
 };
 
 #define MAX_PLAYER_COUNT 9
+#define MANAGE_BETS_FOLDED 0
+#define MANAGE_BETS_CALLED 1
 
 class Game {
 public:
@@ -29,7 +31,7 @@ public:
     void playHand();
 
     // Gérer un tour de mises
-    void manageBets(Stage stage);
+    size_t manageBets(Stage stage);
 
 	size_t firstPlayerToAct(bool isPreFlop);
 
